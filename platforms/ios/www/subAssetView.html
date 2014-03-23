@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" href="css/jquery.mobile-1.4.2.min.css" />
+        <script src="js/jquery-1.8.3.min.js"></script>
+		<script src="js/jquery.mobile-1.4.2.min.js"></script>
+		<script type="text/javascript" src="js/nbSecurityApp.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript">
+        	var nbSecurityApp = new nbSecurityApp();
+        </script>
+        <title>HomeSecurity</title>
+    </head>
+    <body>
+    	<div data-role=page id=win5 data-add-back-btn=true>
+			<div style="background-color: #e9e9e9; height: 20px; width: 100%;"></div>
+	    	<div data-role="header">
+			  <h1>Sub Asset</h1>
+			  <!--<a href="subAssetList.html" id="back" data-icon="carat-l" data-ajax="false" class="ui-btn-left">Back</a>-->
+			  <a data-icon="check" data-theme="b">Save</a>
+			</div>
+		
+		  	<div data-role=content>
+	        	<table width="100%" class="table-stripe">
+	        		<tr>
+						<th align="right" width="30%">GUID</th>
+						<td align="left" width="70%" id="guid"></td>
+	        		</tr>
+	        		<tr>
+						<th align="right" width="30%">Category</th>
+						<td align="left" width="70%" id="category"></td>
+					</tr>
+	        		<tr>
+						<th align="right" width="30%">Data</th>
+						<td align="left" width="70%" id="data"></td>
+					</tr>
+					<tr>
+						<th align="right" width="30%">Short Name</th>
+						<td align="left" width="70%" id="shortName"></td>
+					</tr>
+					<tr>
+						<th align="right" width="30%">Type</th>
+						<td align="left" width="70%" id="type"></td>
+					</tr>
+	        		<tr>
+	        			<th align="right" width="30%">Security</th>
+	        			<td align="left" width="70%" id="secure">
+						  	<fieldset>
+								<div data-role="fieldcontain">
+									<input type="checkbox" id="checkbox-based-flipswitch" data-role="flipswitch">
+								</div>
+							</fieldset>
+					  	</td>
+	        		</tr>
+	        	</table>
+	        	<span id="image"></span>	
+				<div id="state" style="position: fixed; bottom: 5px; right: 5px; width: 20px; height: 20px; border-radius: 10px; background-color: green;"></div>
+			</div>
+		</div>        
+        
+        <script type="text/javascript">
+        	window.setTimeout(function(){
+        		nbSecurityApp.setSubAssetData();
+        	}, 500);
+        </script>
+    </body>
+</html>
+<!--
+
+
+
+
+
+
+SAVE OPTIONS IN A TEXT FILE
+
+
+
+
+
+
+
+-->
