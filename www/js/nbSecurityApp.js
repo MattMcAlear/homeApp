@@ -2,13 +2,18 @@
 
 function nbSecurityApp(){
 	this.assetObj;
+	this.db;
 }
 
 nbSecurityApp.prototype = {
 	//restore constructor
 	constructor: nbSecurityApp,
 	
-	getAlarmState: function(){		
+	init: function(){
+		//Creates DB Table
+		this._db.trans('create', {tableName: 'Pref', cols: ['Guid', 'Asset']});
+		
+		//Returns alarm state (On or Off)
 		return this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'getData=alarmState');
 	},
 	
@@ -300,6 +305,9 @@ nbSecurityApp.prototype = {
 			
 			//Set image
 			this._setImage(name.replace(/%20/g, ' '), 'image');
+			
+			//Set save values
+			document.getElementById('deviceSave').onclick = this._savePref(guid, 'device');
 		}else if(asset == 'rules'){
 			var rid = this.assetObj[asset][guid].rid;
 			var shortName = this.assetObj[asset][guid].shortName;
@@ -313,6 +321,9 @@ nbSecurityApp.prototype = {
 			
 			//Set image
 			this._setImage('rule', 'image2');
+			
+			//Set save values
+			document.getElementById('ruleSave').onclick = this._savePref(rid, 'rule');
 		}
 	},
 	
@@ -350,52 +361,76 @@ nbSecurityApp.prototype = {
 		
 		//Set image
 		this._setImage(shortName.replace(/%20/g, ' '), 'subImage');
+		
+		//Set save values
+		document.getElementById('subDeviceSave').onclick = this._savePref(guid, 'subDevice');
 	},
 	
-	_db: function(){
-		// Populate the database 
-	    //
-	    function populateDB(tx) {
-	        tx.executeSql('DROP TABLE IF EXISTS DEMO');
-	        tx.executeSql('CREATE TABLE IF NOT EXISTS DEMO (id unique, data)');
-	        tx.executeSql('INSERT INTO DEMO (id, data) VALUES (1, "First row")');
-	        tx.executeSql('INSERT INTO DEMO (id, data) VALUES (2, "Second row")');
-	    }
-	
-	    // Query the database
-	    //
-	    function queryDB(tx) {
-	        tx.executeSql('SELECT * FROM DEMO', [], querySuccess, errorCB);
-	    }
-	
-	    // Query the success callback
-	    //
-	    function querySuccess(tx, results) {
-	        var len = results.rows.length;
-	        console.log("DEMO table: " + len + " rows found.");
-	        for (var i=0; i<len; i++){
-	            console.log("Row = " + i + " ID = " + results.rows.item(i).id + " Data =  " + results.rows.item(i).data);
-	        }
-	    }
-	
-	    // Transaction error callback
-	    //
-	    function errorCB(err) {
+	_db: {		
+
+	    errorCB: function(err) {
 	        console.log("Error processing SQL: "+err.code);
+	    },
+
+	    successCB: function() {
+	    	console.log("Successfully Saved Data!");
+	    },
+		
+	    trans: function(type, data){
+	    	var db = window.openDatabase("Database", "1.0", "Home App", 200000);
+	    	
+	    	if(type == 'create'){
+	    		db.transaction(function(tx){
+		    		var c = '';
+			    	tx.executeSql('DROP TABLE IF EXISTS '+data.tableName);
+			    	for(var i=0; i<data.cols.length; i++){
+			    		c += data.cols[i];
+				    	if(i==0){ c += ' unique'; }
+						if(i!=data.cols.length-1){c += ','; }
+			    	}
+				    tx.executeSql('CREATE TABLE IF NOT EXISTS '+data.tableName+' ('+c+')');
+			    }, this.errorCB, this.successCB);
+			    
+	    	}else if(type == 'insert'){
+		    	db.transaction(function(tx){
+		    		var c = '';
+		    		var v = '';
+		    		for(var i=0; i<data.cols.length; i++){
+			    		c += data.cols[i];
+						if(i!=data.cols.length-1){c += ','; }
+			    	}
+			    	for(var i=0; i<data.vals.length; i++){
+			    		v += '"'+data.vals[i]+'"';
+						if(i!=data.vals.length-1){v += ','; }
+			    	}
+			        tx.executeSql('INSERT INTO '+data.tableName+' ('+c+') VALUES ('+v+')');
+				}, this.errorCB, this.successCB);
+				
+	    	}else if(type == 'select'){
+	    		db.transaction(function(tx){
+		    		tx.executeSql('SELECT * FROM '+data.tableName, [], function(tx, results) {
+				        var len = results.rows.length;
+				        var r = [];
+				        for (var i=0; i<len; i++){
+				        	r[i] = {id: results.rows.item(i).id, data: results.rows.item(i).data};
+				        }
+				        
+				        return r;
+				    }, this.errorCB);
+		    	}, this.errorCB, this.successCB);
+	    	}else{
+		    	//None
+	    	}
 	    }
+	},
 	
-	    // Transaction success callback
-	    //
-	    function successCB() {
-	        var db = window.openDatabase("Database", "1.0", "Cordova Demo", 200000);
-	        db.transaction(queryDB, errorCB);
-	    }
-	
-	    // Cordova is ready
-	    //
-	    function onDeviceReady() {
-	        var db = window.openDatabase("Database", "1.0", "Cordova Demo", 200000);
-	        db.transaction(populateDB, errorCB, successCB);
-	    }
+	_savePref: function(guid, asset){
+		if((document.getElementById('deviceSecurity').checked == true && asset == 'device')
+		|| (document.getElementById('subDeviceSecurity').checked == true && asset == 'subDevice')
+		|| (document.getElementById('ruleSecurity').checked == true && asset == 'rule')){
+			this._db.trans('insert', {tableName: 'Pref', cols: ['Guid', 'Asset'], vals: [guid, asset]});
+		}else{
+			//Nothing checked
+		}
 	}
 }
