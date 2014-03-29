@@ -3,15 +3,70 @@
 function nbSecurityApp(){
 	this.assetObj;
 	this.db;
+	this.securityAssets = {};
 }
 
 nbSecurityApp.prototype = {
 	//restore constructor
 	constructor: nbSecurityApp,
 	
-	init: function(){
+	init: function(){		
 		//Creates DB Table
-		this._db.trans('create', {tableName: 'Pref', cols: ['Guid', 'Asset']});
+		this._db.trans('create', "CREATE TABLE IF NOT EXISTS Pref (Guid unique, Asset)", function(response){
+			//Awesome
+		});
+		
+		// wait for DOM to load
+		$(document).ready(function(){ 
+			//Flipswitch listeners
+			var flipswitchState = document.getElementById('flip-switch-state1');
+			$('#flip-switch1').click(function(){
+				if(flipswitchState.value == 0){
+					$(this).children().addClass('ui-flipswitch-active');
+					document.getElementById('deviceSecurity').checked = true;
+					flipswitchState.value = 1;
+				}else{
+					$(this).children().removeClass('ui-flipswitch-active');
+					document.getElementById('deviceSecurity').checked = false;
+					flipswitchState.value = 0;
+				}
+			});
+			var flipswitchState = document.getElementById('flip-switch-state2');
+			$('#flip-switch2').click(function(){
+				if(flipswitchState.value == 0){
+					$(this).children().addClass('ui-flipswitch-active');
+					document.getElementById('ruleSecurity').checked = true;
+					flipswitchState.value = 1;
+				}else{
+					$(this).children().removeClass('ui-flipswitch-active');
+					document.getElementById('ruleSecurity').checked = false;
+					flipswitchState.value = 0;
+				}
+			});
+			var flipswitchState = document.getElementById('flip-switch-state3');
+			$('#flip-switch3').click(function(){
+				if(flipswitchState.value == 0){
+					$(this).children().addClass('ui-flipswitch-active');
+					document.getElementById('subDeviceSecurity').checked = true;
+					flipswitchState.value = 1;
+				}else{
+					$(this).children().removeClass('ui-flipswitch-active');
+					document.getElementById('subDeviceSecurity').checked = false;
+					flipswitchState.value = 0;
+				}
+			});
+			
+			//Global popup windows
+			$( function() {
+			 	$( "#popup-outside-page" ).enhanceWithin().popup();
+			});
+			$( function() {
+			 	$( "#popup-outside-page2" ).enhanceWithin().popup();
+			});
+			$( function() {
+			 	$( "#popup-outside-page3" ).enhanceWithin().popup();
+			});
+		});
 		
 		//Returns alarm state (On or Off)
 		return this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'getData=alarmState');
@@ -23,7 +78,7 @@ nbSecurityApp.prototype = {
 		//Will invoke 5 times to make sure all assets have been triggered
 		var count = 0;
 		var intervalID = window.setInterval(function(){
-			var r = that._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'setState=arm');
+			var r = that._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'setState=arm&secrityAssets='+that.securityAssets);
 			document.getElementById('arm').className = "ui-btn ui-corner-all ui-btn-active";
 			document.getElementById('disarm').className = "ui-btn ui-corner-all";
 			
@@ -56,6 +111,30 @@ nbSecurityApp.prototype = {
 	getAssets: function(){
 		return this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'getAssets=true');		
 	},
+	
+	toggleAssetState: function(asset){
+		if(asset == 'ruleOn'){
+			var guid = document.getElementById('rid').innerHTML;
+			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOn=true&guid='+guid);
+			
+			//Confirmation
+			$( "#popup-outside-page3" ).popup( "open" );
+		}else if(asset == 'ruleOff'){
+			var guid = document.getElementById('rid').innerHTML;
+			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOff=true&guid='+guid);
+			
+			//Confirmation
+			$( "#popup-outside-page3" ).popup( "open" );
+		}else if(asset == 'rfActuate'){
+			var guid = document.getElementById('subGuid').innerHTML;
+			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'rfActuate=true&guid='+guid);
+			
+			//Confirmation
+			$( "#popup-outside-page2" ).popup( "open" );
+		}else{
+			//Noda
+		}		
+	},
 			
 	//Private Methods
 	_ajax: function(method, location, queryString){		
@@ -77,22 +156,14 @@ nbSecurityApp.prototype = {
 	            	document.getElementById('arm').className += " ui-btn-active";
 	            }else if(json == 'disarmed'){
 		            document.getElementById('disarm').className += " ui-btn-active";
-	            }else{
+	            }else if(json['devices']){
 		            that.assetObj = json;
 		            
 		            that._setAssets();
+	            }else{
+		            //Noda
 	            }
-	            
-	            /*else if(json.substr(0, 25) == '<ul data-role="listview">'){
-		            document.getElementById('nbAssetDisplay').innerHTML = json;
-		            //Repaints CSS
-		            //$( "div[data-role=page]" ).page( "destroy" ).page();
-	            }else if(json.substr(0, 34) == '<ul data-role="listview" id="sub">'){
-		            document.getElementById('nbSubAssetDisplay').innerHTML = json;
-		            //Repaints CSS
-		            //$( "div[data-role=page]" ).page( "destroy" ).page();
-	            }*/
-	            
+	                        
 	            return json;	            
 	         },
 	         error:function(XHR, textStatus, errorThrown){	         	
@@ -145,6 +216,9 @@ nbSecurityApp.prototype = {
 	_setImage: function(asset, id){
 		switch(asset.toLowerCase()){
 			// DEVICES IMAGES
+			case 'web cam':
+				document.getElementById(id).innerHTML = '<img src="img/nbDevices/camera.png" width="320px" height="210px" />';
+				break;
 			case 'generic state device':
 				document.getElementById(id).innerHTML = '<img src="img/nbDevices/state.jpg" width="320px" height="210px" />';
 				break;
@@ -253,7 +327,7 @@ nbSecurityApp.prototype = {
 					for (var prop2 in obj2) {
 					  	if(obj2.hasOwnProperty(prop2)){
 					  		if(prop2 == 'default_name'){
-						  		html += '<li><a href="#deviceView" onclick="nbSecurityApp._setAssetData(\''+key2+'\',\''+key+'\')" data-transition="slide">'+obj2[prop2]+'</a></li>';
+						  		html += '<li><a href="#deviceView" onclick="nbSecurityApp._setAssetData(\''+key2+'\',\''+key+'\')" data-transition="flow">'+obj2[prop2]+'</a></li>';
 					  		}
 						}
 					}
@@ -265,7 +339,7 @@ nbSecurityApp.prototype = {
 					for (var prop2 in obj2) {
 					  	if(obj2.hasOwnProperty(prop2)){
 					  		if(prop2 == 'shortName'){
-						  		html += '<li><a href="#ruleView" onclick="nbSecurityApp._setAssetData(\''+key2+'\',\''+key+'\')" data-transition="slide">'+obj2[prop2]+'</a></li>';
+						  		html += '<li><a href="#ruleView" onclick="nbSecurityApp._setAssetData(\''+key2+'\',\''+key+'\')" data-transition="flow">'+obj2[prop2]+'</a></li>';
 					  		}
 						}
 					}
@@ -306,8 +380,12 @@ nbSecurityApp.prototype = {
 			//Set image
 			this._setImage(name.replace(/%20/g, ' '), 'image');
 			
+			//Set Preferences
+			this._setPref('select_device', guid);
+			
 			//Set save values
-			document.getElementById('deviceSave').onclick = this._savePref(guid, 'device');
+			var btn = document.getElementById('deviceSave');
+			btn.setAttribute('onclick', 'nbSecurityApp._savePref(\''+guid+'\', \'device\')');
 		}else if(asset == 'rules'){
 			var rid = this.assetObj[asset][guid].rid;
 			var shortName = this.assetObj[asset][guid].shortName;
@@ -322,21 +400,24 @@ nbSecurityApp.prototype = {
 			//Set image
 			this._setImage('rule', 'image2');
 			
+			//Set Preferences
+			this._setPref('select_rule', rid);
+			
 			//Set save values
-			document.getElementById('ruleSave').onclick = this._savePref(rid, 'rule');
+			var btn = document.getElementById('deviceSave');
+			btn.setAttribute('onclick', 'nbSecurityApp._savePref(\''+rid+'\', \'rule\')');
 		}
 	},
 	
 	_setSubAssets: function(guid, asset){
-		//$('#mylist').listview('refresh');
-		var html = '<ul data-role="listview"><li data-role="list-divider"><a>Devices</a></li>';
+		var html = '<ul data-role="listview" id="subAssetListView"><li data-role="list-divider"><a>Devices</a></li>';
 		
 		for (var key in this.assetObj[asset][guid].subDevices) {
 			var obj = this.assetObj[asset][guid].subDevices[key];
 			for (var prop in obj) {
 			  	if(obj.hasOwnProperty(prop)){
 			  		if(prop == 'shortName'){
-				  		html += '<li><a href="#subAssetView" onclick="nbSecurityApp._setSubAssetData(\''+guid+'\',\''+key+'\',\''+asset+'\')" data-transition="slide">'+obj[prop]+'</a></li>';
+				  		html += '<li><a href="#subAssetView" onclick="nbSecurityApp._setSubAssetData(\''+guid+'\',\''+key+'\',\''+asset+'\')" data-transition="flow">'+obj[prop]+'</a></li>';
 			  		}
 				}
 			}
@@ -344,7 +425,13 @@ nbSecurityApp.prototype = {
 		
 		html += '</ul>';
 		
-		document.getElementById('nbSubAssetDisplay').innerHTML = html;
+		
+		
+		//Bind to page initialization
+		$('#subAssetList').bind('pageinit', function() {
+			document.getElementById('nbSubAssetDisplay').innerHTML = html;
+		  	$('#subAssetListView').listview('refresh');
+		});
 	},
 	
 	_setSubAssetData: function(guid, subGuid, asset){
@@ -362,62 +449,54 @@ nbSecurityApp.prototype = {
 		//Set image
 		this._setImage(shortName.replace(/%20/g, ' '), 'subImage');
 		
+		//Set Preferences
+		this._setPref('select_subDevice', subGuid);
+		
 		//Set save values
-		document.getElementById('subDeviceSave').onclick = this._savePref(guid, 'subDevice');
+		var btn = document.getElementById('deviceSave');
+		btn.setAttribute('onclick', 'nbSecurityApp._savePref(\''+subGuid+'\', \'subDevice\')');
 	},
 	
-	_db: {		
-
+	_db: {			    
 	    errorCB: function(err) {
 	        console.log("Error processing SQL: "+err.code);
 	    },
 
 	    successCB: function() {
-	    	console.log("Successfully Saved Data!");
+	    	//console.log("Successful Transaction!");
 	    },
-		
-	    trans: function(type, data){
+	    
+	    trans: function(type, query, callback){ //function(type, data)
+	    	//Open connection
 	    	var db = window.openDatabase("Database", "1.0", "Home App", 200000);
-	    	
+
 	    	if(type == 'create'){
 	    		db.transaction(function(tx){
-		    		var c = '';
-			    	tx.executeSql('DROP TABLE IF EXISTS '+data.tableName);
-			    	for(var i=0; i<data.cols.length; i++){
-			    		c += data.cols[i];
-				    	if(i==0){ c += ' unique'; }
-						if(i!=data.cols.length-1){c += ','; }
-			    	}
-				    tx.executeSql('CREATE TABLE IF NOT EXISTS '+data.tableName+' ('+c+')');
+			    	//tx.executeSql('DROP TABLE IF EXISTS '+data.tableName);
+				    tx.executeSql(query);				    
 			    }, this.errorCB, this.successCB);
-			    
 	    	}else if(type == 'insert'){
 		    	db.transaction(function(tx){
-		    		var c = '';
-		    		var v = '';
-		    		for(var i=0; i<data.cols.length; i++){
-			    		c += data.cols[i];
-						if(i!=data.cols.length-1){c += ','; }
-			    	}
-			    	for(var i=0; i<data.vals.length; i++){
-			    		v += '"'+data.vals[i]+'"';
-						if(i!=data.vals.length-1){v += ','; }
-			    	}
-			        tx.executeSql('INSERT INTO '+data.tableName+' ('+c+') VALUES ('+v+')');
+			        tx.executeSql(query);
 				}, this.errorCB, this.successCB);
-				
+	    	}else if(type == 'delete'){
+	    		db.transaction(function(tx){
+			        tx.executeSql(query);
+				}, this.errorCB, this.successCB);
 	    	}else if(type == 'select'){
 	    		db.transaction(function(tx){
-		    		tx.executeSql('SELECT * FROM '+data.tableName, [], function(tx, results) {
+		    		tx.executeSql(query, [], function(tx, results) {
 				        var len = results.rows.length;
 				        var r = [];
 				        for (var i=0; i<len; i++){
-				        	r[i] = {id: results.rows.item(i).id, data: results.rows.item(i).data};
+				        	r[i] = {guid: results.rows.item(i).Guid, asset: results.rows.item(i).Asset};
 				        }
-				        
-				        return r;
-				    }, this.errorCB);
-		    	}, this.errorCB, this.successCB);
+				        				        
+				        callback(r);
+				    }, function(err) {
+				        console.log("Error processing SQL: "+err.code);
+				    });
+		    	}, this.errorCB, this.successCB);		    	
 	    	}else{
 		    	//None
 	    	}
@@ -428,9 +507,72 @@ nbSecurityApp.prototype = {
 		if((document.getElementById('deviceSecurity').checked == true && asset == 'device')
 		|| (document.getElementById('subDeviceSecurity').checked == true && asset == 'subDevice')
 		|| (document.getElementById('ruleSecurity').checked == true && asset == 'rule')){
-			this._db.trans('insert', {tableName: 'Pref', cols: ['Guid', 'Asset'], vals: [guid, asset]});
+			var that = this;
+			this._db.trans('select', 'SELECT * FROM Pref WHERE Guid = "'+guid+'"', function(response){
+				if(response[0]){
+					//No need to insert!
+				}else{
+					that._db.trans('insert', 'INSERT INTO Pref (Guid, Asset) VALUES ("'+guid+'", "'+asset+'")', function(response){
+						//Awesome
+					});
+				}
+			});
 		}else{
-			//Nothing checked
+			this._db.trans('delete', 'DELETE FROM Pref WHERE Guid = "'+guid+'"', function(response){
+				//Awesome
+			});
 		}
+		
+		//Confirmation
+		$( "#popup-outside-page" ).popup( "open" );
+	},
+	
+	_setPref: function(asset, guid){
+		this._db.trans('select', 'SELECT * FROM Pref WHERE Guid = "'+guid+'"', function(response){
+			if(asset == 'select_device'){
+				//Set flipswitch
+		        var flipswitchState = document.getElementById('flip-switch-state1');
+				if(response[0]){
+					$('#flip-switch1').children().addClass('ui-flipswitch-active');
+					document.getElementById('deviceSecurity').checked = true;
+					flipswitchState.value = 1;
+				}else{
+					$('#flip-switch1').children().removeClass('ui-flipswitch-active');
+					document.getElementById('deviceSecurity').checked = false;
+					flipswitchState.value = 0;
+				}
+			}else if(asset == 'select_rule'){
+				//Set flipswitch
+		        var flipswitchState = document.getElementById('flip-switch-state2');
+				if(response[0]){
+					$('#flip-switch2').children().addClass('ui-flipswitch-active');
+					document.getElementById('ruleSecurity').checked = true;
+					flipswitchState.value = 1;
+				}else{
+					$('#flip-switch2').children().removeClass('ui-flipswitch-active');
+					document.getElementById('ruleSecurity').checked = false;
+					flipswitchState.value = 0;
+				}
+			}else if(asset == 'select_subDevice'){
+				//Set flipswitch
+		        var flipswitchState = document.getElementById('flip-switch-state3');
+				if(response[0]){
+					$('#flip-switch3').children().addClass('ui-flipswitch-active');
+					document.getElementById('subDeviceSecurity').checked = true;
+					flipswitchState.value = 1;
+				}else{
+					$('#flip-switch3').children().removeClass('ui-flipswitch-active');
+					document.getElementById('subDeviceSecurity').checked = false;
+					flipswitchState.value = 0;
+				}
+			}
+		});
+	},
+	
+	_getSecurityAssets: function(){
+		var that = this;
+		this._db.trans('select', 'SELECT * FROM Pref WHERE Guid = "'+guid+'"', function(response){
+			that.securityAssets = response;
+		});
 	}
 }

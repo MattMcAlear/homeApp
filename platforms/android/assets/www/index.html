@@ -24,7 +24,8 @@
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
-        <link rel="stylesheet" href="css/jquery.mobile-1.4.2.min.css" />
+        <link rel="stylesheet" href="css/jquery.mobile-1.4.2.css" />
+        <link rel="stylesheet" href="css/powerButton.css" />
         <script src="js/jquery-1.8.3.min.js"></script>
 		<script src="js/jquery.mobile-1.4.2.min.js"></script>
         <script type="text/javascript" src="js/nbSecurityApp.js"></script>
@@ -33,8 +34,8 @@
         <script type="text/javascript">
             app.initialize();
             var nbSecurityApp = new nbSecurityApp();
-            nbSecurityApp.getAlarmState();
-            nbSecurityApp.getAssets();			
+            nbSecurityApp.init();
+            nbSecurityApp.getAssets();
         </script>
         
         <title>HomeSecurity</title>
@@ -46,10 +47,11 @@
     		--------
     	-->
     	<div data-role="page" id="home">
-			<div style="background-color: #e9e9e9; height: 20px; width: 100%;"></div>
 	    	<div data-role="header">
+	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
 				<h1>Home</h1>
-				<a href="#options" data-icon="gear" class="ui-btn-right">Options</a>
+				<a data-icon="refresh" class="ui-btn-left" onclick="location.reload();">Refresh</a>
+				<a href="#options" data-icon="gear" class="ui-btn-right" data-transition="flip">Options</a>
 			</div>
 		
 			<div data-role=content>
@@ -69,8 +71,8 @@
 			--------
 		-->
     	<div data-role="page" id="options">
-			<div style="background-color: #e9e9e9; height: 20px; width: 100%;"></div>
-	    	<div data-role="header" data-add-back-btn="true">
+	    	<div data-role="header" data-add-back-btn="true" data-position="fixed">
+	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
 			  	<h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Options</a></h1>
 			</div>
 			
@@ -91,11 +93,11 @@
 			- PAGE 3
 			--------
 		-->
-		<div data-role="page" id="assetView">
-			<div style="background-color: #e9e9e9; height: 20px; width: 100%;"></div>
+		<div data-role="page" id="deviceView">
 	    	<div data-role="header" data-add-back-btn="true">
-			  <h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Asset</a></h1>
-			  <a data-icon="check" data-theme="b" class="ui-btn-right">Save</a>
+	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
+				<h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Asset</a></h1>
+				<a data-icon="check" data-theme="b" class="ui-btn-right" id="deviceSave">Save</a>
 			</div>
 		
         	<table style="left: 0px; width: 100%;" class="table-stripe">
@@ -134,16 +136,23 @@
         		<tr>
         			<th align="right" width="30%">Security</th>
         			<td align="left" width="70%" id="secure">
-					  	<fieldset>
-							<div data-role="fieldcontain">
-								<input type="checkbox" id="checkbox-based-flipswitch" data-role="flipswitch">
-							</div>
-						</fieldset>
-				  	</td>
+				  		<div data-role="fieldcontain" class="ui-field-contain" id="flip-switch1">
+				  			<div class="ui-flipswitch ui-shadow-inset ui-bar-inherit ui-corner-all">
+				  				<a href="#" class="ui-flipswitch-on ui-btn ui-shadow ui-btn-inherit">On</a>
+				  				<span class="ui-flipswitch-off">Off</span>
+				  				<input type="checkbox" id="deviceSecurity" data-role="flipswitch" class="ui-flipswitch-input" tabindex="-1">
+				  				<input type="hidden" id="flip-switch-state1" value="0" />
+				  			</div>
+				  		</div>
+					</td>
         		</tr>
         	</table>
-        	<span id="image"></span>	
-			<div id="state" style="position: fixed; bottom: 5px; right: 5px; width: 20px; height: 20px; border-radius: 10px; background-color: green;"></div>
+        	<span id="image"></span>
+        	<section>  
+			    <a rel="external" id="powerButton" onclick="$(this).toggleClass('on');">&#xF011;</a>  
+			    <!--<span class="powerButtonSpan"></span>-->
+			</section>
+			<!--<div id="state" style="position: fixed; bottom: 5px; right: 5px; width: 20px; height: 20px; border-radius: 10px; background-color: green;"></div>-->
 		</div>
 		
 		
@@ -153,9 +162,62 @@
 			- PAGE 4
 			--------
 		-->
-		<div data-role="page" id="subAssetList">
-			<div style="background-color: #e9e9e9; height: 20px; width: 100%;"></div>
+		<div data-role="page" id="ruleView">
 	    	<div data-role="header" data-add-back-btn="true">
+	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
+				<h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Asset</a></h1>
+				<a data-icon="check" data-theme="b" class="ui-btn-right" id="ruleSave">Save</a>
+			</div>
+		
+        	<table style="left: 0px; width: 100%;" class="table-stripe">
+        		<tr>
+					<th align="right" width="30%">RID</th>
+					<td align="left" width="70%" id="rid"></td>
+        		</tr>
+        		<tr>
+					<th align="right" width="30%">Short Name</th>
+					<td align="left" width="70%" id="shortName"></td>
+				</tr>
+        		<tr>
+					<th align="right" width="30%">Suspended</th>
+					<td align="left" width="70%" id="suspended"></td>
+				</tr>
+				<tr>
+					<th align="right" width="30%">Timeout</th>
+					<td align="left" width="70%" id="timeout"></td>
+				</tr>
+        		<tr>
+        			<th align="right" width="30%">Security</th>
+        			<td align="left" width="70%" id="secure">
+					  	<div data-role="fieldcontain" class="ui-field-contain" id="flip-switch2">
+				  			<div class="ui-flipswitch ui-shadow-inset ui-bar-inherit ui-corner-all">
+				  				<a href="#" class="ui-flipswitch-on ui-btn ui-shadow ui-btn-inherit">On</a>
+				  				<span class="ui-flipswitch-off">Off</span>
+				  				<input type="checkbox" id="deviceSecurity" data-role="flipswitch" class="ui-flipswitch-input" tabindex="-1">
+				  				<input type="hidden" id="flip-switch-state2" value="0" />
+				  			</div>
+				  		</div>
+				  	</td>
+        		</tr>
+        	</table>
+        	<span id="image2"></span>
+        	<section>  
+			    <a rel="external" id="powerButton">&#xF011;</a>  
+			    <!--<span class="powerButtonSpan"></span>-->
+			</section>	
+			<!--<div id="state" style="position: fixed; bottom: 5px; right: 5px; width: 20px; height: 20px; border-radius: 10px; background-color: green;"></div>-->
+		</div>
+		
+		
+		
+		<!--
+			--------
+			- PAGE 5
+			--------
+		-->
+		<div data-role="page" id="subAssetList">
+	    	<div data-role="header" data-add-back-btn="true" data-position="fixed">
+	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
 			  	<h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Sub Assets</a></h1>
 			</div>
 		
@@ -168,14 +230,14 @@
 		
 		<!--
 			--------
-			- PAGE 5
+			- PAGE 6
 			--------
 		-->
 		<div data-role="page" id="subAssetView">
-			<div style="background-color: #e9e9e9; height: 20px; width: 100%;"></div>
 	    	<div data-role="header" data-add-back-btn="true">
-			  <h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Sub Asset</a></h1>
-			  <a data-icon="check" data-theme="b" class="ui-btn-right">Save</a>
+	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
+				<h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Sub Asset</a></h1>
+				<a data-icon="check" data-theme="b" class="ui-btn-right" id="subDeviceSave">Save</a>
 			</div>
 		
         	<table width="100%" class="table-stripe">
@@ -202,16 +264,23 @@
         		<tr>
         			<th align="right" width="30%">Security</th>
         			<td align="left" width="70%" id="secure">
-					  	<fieldset>
-							<div data-role="fieldcontain">
-								<input type="checkbox" id="checkbox-based-flipswitch" data-role="flipswitch">
-							</div>
-						</fieldset>
+					  	<div data-role="fieldcontain" class="ui-field-contain" id="flip-switch3">
+				  			<div class="ui-flipswitch ui-shadow-inset ui-bar-inherit ui-corner-all">
+				  				<a href="#" class="ui-flipswitch-on ui-btn ui-shadow ui-btn-inherit">On</a>
+				  				<span class="ui-flipswitch-off">Off</span>
+				  				<input type="checkbox" id="deviceSecurity" data-role="flipswitch" class="ui-flipswitch-input" tabindex="-1">
+				  				<input type="hidden" id="flip-switch-state3" value="0" />
+				  			</div>
+				  		</div>
 				  	</td>
         		</tr>
         	</table>
-        	<span id="image"></span>	
-			<div id="state" style="position: fixed; bottom: 5px; right: 5px; width: 20px; height: 20px; border-radius: 10px; background-color: green;"></div>
+        	<span id="subImage"></span>
+        	<section>  
+			    <a rel="external" id="powerButton">&#xF011;</a>  
+			    <!--<span class="powerButtonSpan"></span>-->  
+			</section>
+			<!--<div id="state" style="position: fixed; bottom: 5px; right: 5px; width: 20px; height: 20px; border-radius: 10px; background-color: green;"></div>-->
 		</div>
 		
     </body>
