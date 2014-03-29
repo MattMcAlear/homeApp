@@ -119,9 +119,13 @@ nbSecurityApp.prototype = {
 		if(asset == 'ruleOn'){
 			var guid = document.getElementById('rid').innerHTML;
 			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOn=true&guid='+guid, '3');
+			
+			document.getElementById('suspended').innerHTML = 'false';
 		}else if(asset == 'ruleOff'){
 			var guid = document.getElementById('rid').innerHTML;
 			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOff=true&guid='+guid, '3');
+			
+			document.getElementById('suspended').innerHTML = 'true';
 		}else if(asset == 'rfActuate'){
 			var guid = document.getElementById('subData').innerHTML;
 			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'rfActuate=true&guid='+guid, '2');
@@ -386,7 +390,7 @@ nbSecurityApp.prototype = {
 			//Set image
 			this._setImage(name.replace(/%20/g, ' '), 'image');
 			
-			//Set Preferences
+			//Set Security Preference Switch
 			this._setPref('select_device', guid);
 			
 			//Set save values
@@ -406,12 +410,15 @@ nbSecurityApp.prototype = {
 			//Set image
 			this._setImage('rule', 'image2');
 			
-			//Set Preferences
+			//Set Security Preference Switch
 			this._setPref('select_rule', rid);
 			
 			//Set save values
-			var btn = document.getElementById('deviceSave');
+			var btn = document.getElementById('ruleSave');
 			btn.setAttribute('onclick', 'nbSecurityApp._savePref(\''+rid+'\', \'rule\')');
+			
+			//Set Rule State
+			this._setRuleState();
 		}
 	},
 	
@@ -458,7 +465,7 @@ nbSecurityApp.prototype = {
 		this._setPref('select_subDevice', subGuid);
 		
 		//Set save values
-		var btn = document.getElementById('deviceSave');
+		var btn = document.getElementById('subDeviceSave');
 		btn.setAttribute('onclick', 'nbSecurityApp._savePref(\''+subGuid+'\', \'subDevice\')');
 	},
 	
@@ -572,6 +579,16 @@ nbSecurityApp.prototype = {
 				}
 			}
 		});
+	},
+	
+	_setRuleState: function(){
+		if(document.getElementById('suspended').innerHTML == 'true'){
+			document.getElementById('ruleOff').className += " ui-btn-active";
+			$('#ruleOn').removeClass("ui-btn-active");
+		}else{
+			document.getElementById('ruleOn').className += " ui-btn-active";
+			$('#ruleOff').removeClass("ui-btn-active");
+		}
 	},
 	
 	_getSecurityAssets: function(){

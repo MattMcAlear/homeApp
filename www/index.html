@@ -45,7 +45,7 @@
     		--------
     	-->
     	<div id="popup-outside-page1" data-theme="a" data-overlay-theme="a">
-			<h1>Successfully Saved Data!</h1>
+			<h1>Successfully Saved Preferences!</h1>
 		</div>
 		<div id="popup-outside-page2" data-theme="a" data-overlay-theme="a">
 			<h1>Successfully Actuated Device!</h1>
@@ -91,7 +91,7 @@
     	<div data-role="page" id="options">
 	    	<div data-role="header" data-add-back-btn="true" data-position="fixed">
 	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
-			  	<h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Options</a></h1>
+			  	<h1><a href="index.html" style="text-decoration: none; color: #333; font-weight:normal;">Admin</a></h1>
 			</div>
 			
 		  	<div data-role=content>
@@ -99,6 +99,15 @@
 					<label for="name">Access Token:</label>
 					<input type="text" name="accessToken" id="accessToken" value="API KEY">
 				</div>
+				<fieldset>
+				  	<div data-role="fieldcontain">
+				    	<label for="select-based-flipswitch">Use Saved Settings:</label>
+						<select id="select-based-flipswitch" data-role="flipswitch" id="useSavedPref">
+							<option value="no">No</option>
+							<option value="yes">Yes</option>
+						</select>
+					</div>
+				</fieldset>
 				<br/>
 	        	<div id="nbAssetDisplay"></div>
 			</div>
@@ -218,7 +227,7 @@
         		<div data-role="navbar">
 					<ul>
 						<li><a data-icon="forbidden" id="ruleOff" onclick="nbSecurityApp.toggleAssetState(this.id);">OFF</a></li>
-						<li><a data-icon="power" id="ruleOn" class="ui-btn-active" onclick="nbSecurityApp.toggleAssetState(this.id);">ON</a></li>
+						<li><a data-icon="power" id="ruleOn" onclick="nbSecurityApp.toggleAssetState(this.id);">ON</a></li>
 					</ul>
 				</div>
 			</div>
