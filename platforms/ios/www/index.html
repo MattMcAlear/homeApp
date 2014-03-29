@@ -34,7 +34,6 @@
             app.initialize();
             var nbSecurityApp = new nbSecurityApp();
             nbSecurityApp.init();
-            nbSecurityApp.getAssets();
         </script>
         
         <title>HomeSecurity</title>
@@ -45,10 +44,19 @@
     		- GLOBAL
     		--------
     	-->
-    	<div id="popup-outside-page" data-theme="a" data-overlay-theme="a">
+    	<div id="popup-outside-page1" data-theme="a" data-overlay-theme="a">
 			<h1>Successfully Saved Data!</h1>
 		</div>
-    	
+		<div id="popup-outside-page2" data-theme="a" data-overlay-theme="a">
+			<h1>Successfully Actuated Device!</h1>
+		</div>
+		<div id="popup-outside-page3" data-theme="a" data-overlay-theme="a">
+			<h1>Successfully Changed Rule State!</h1>
+		</div>
+    	<div id="popup-outside-page4" data-theme="e" data-overlay-theme="a">
+			<div id="ajaxLoader"><img src="css/images/ajax-loader.gif" style="position: relative; left: 38%; opacity: .1;  z-index: 1000;" /></div>
+			<h1>Processing...</h1>
+		</div>
     	
     	
     	<!--
@@ -61,7 +69,7 @@
 	    		<div style="position: relative; top: 0px; background-color: #e9e9e9; height: 20px; width: 100%;"></div>
 				<h1>Home</h1>
 				<a data-icon="refresh" class="ui-btn-left" onclick="location.reload();">Refresh</a>
-				<a href="#options" data-icon="gear" class="ui-btn-right" data-transition="flip">Options</a>
+				<a href="#options" data-icon="gear" class="ui-btn-right" data-transition="flip">Admin</a>
 			</div>
 		
 			<div data-role=content>
@@ -158,11 +166,6 @@
         		</tr>
         	</table>
         	<span id="image"></span>
-        	<div data-role="footer" class="ui-bar" data-position="fixed" data-fullscreen="true">
-        		<h4></h4>
-        		<a id="deviceOn_device" data-icon="power" class="ui-btn-right" data-theme="b">ON</a>
-        		<a id="deviceOff_device" data-icon="forbidden" class="ui-btn-left" data-theme="b">OFF</a>
-			</div>
 		</div>
 		
 		
@@ -211,10 +214,13 @@
         		</tr>
         	</table>
         	<span id="image2"></span>
-        	<div data-role="footer" class="ui-bar" data-position="fixed" data-fullscreen="true">
-        		<h4></h4>
-        		<a id="deviceOn_rule" data-icon="power" class="ui-btn-right" data-theme="b">ON</a>
-        		<a id="deviceOff_rule" data-icon="forbidden" class="ui-btn-left" data-theme="b">OFF</a>
+        	<div data-role="footer" data-position="fixed" data-fullscreen="true">
+        		<div data-role="navbar">
+					<ul>
+						<li><a data-icon="forbidden" id="ruleOff" onclick="nbSecurityApp.toggleAssetState(this.id);">OFF</a></li>
+						<li><a data-icon="power" id="ruleOn" class="ui-btn-active" onclick="nbSecurityApp.toggleAssetState(this.id);">ON</a></li>
+					</ul>
+				</div>
 			</div>
 		</div>
 		
@@ -232,7 +238,8 @@
 			</div>
 		
 		  	<div data-role=content>
-				<div id="nbSubAssetDisplay"></div>
+				<div id="nbSubAssetDisplay">
+				</div>
 			</div>
 		</div>
 		
@@ -286,10 +293,12 @@
         		</tr>
         	</table>
         	<span id="subImage"></span>
-        	<div data-role="footer" class="ui-bar" data-position="fixed" data-fullscreen="true">
-        		<h4></h4>
-        		<a id="deviceOn_subDevice" data-icon="power" class="ui-btn-right" data-theme="b">ON</a>
-        		<a id="deviceOff_subDevice" data-icon="forbidden" class="ui-btn-left" data-theme="b">OFF</a>
+        	<div data-role="footer" data-position="fixed" data-fullscreen="true">
+        		<div data-role="navbar">
+					<ul>
+						<li><a data-icon="action" id="rfActuate" onclick="nbSecurityApp.toggleAssetState(this.id);">ACTUATE</a></li>
+					</ul>
+				</div>
 			</div>
 		</div>
 		

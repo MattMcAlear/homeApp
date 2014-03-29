@@ -58,7 +58,7 @@ nbSecurityApp.prototype = {
 			
 			//Global popup windows
 			$( function() {
-			 	$( "#popup-outside-page" ).enhanceWithin().popup();
+			 	$( "#popup-outside-page1" ).enhanceWithin().popup();
 			});
 			$( function() {
 			 	$( "#popup-outside-page2" ).enhanceWithin().popup();
@@ -66,10 +66,13 @@ nbSecurityApp.prototype = {
 			$( function() {
 			 	$( "#popup-outside-page3" ).enhanceWithin().popup();
 			});
+			$( function() {
+			 	$( "#popup-outside-page4" ).enhanceWithin().popup();
+			});
 		});
 		
 		//Returns alarm state (On or Off)
-		return this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'getData=alarmState');
+		this.getAssets();
 	},
 	
 	arm: function(){
@@ -78,7 +81,7 @@ nbSecurityApp.prototype = {
 		//Will invoke 5 times to make sure all assets have been triggered
 		var count = 0;
 		var intervalID = window.setInterval(function(){
-			var r = that._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'setState=arm&secrityAssets='+that.securityAssets);
+			var r = that._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'setState=arm&secrityAssets='+that.securityAssets, null);
 			document.getElementById('arm').className = "ui-btn ui-corner-all ui-btn-active";
 			document.getElementById('disarm').className = "ui-btn ui-corner-all";
 			
@@ -96,7 +99,7 @@ nbSecurityApp.prototype = {
 		//Will invoke 5 times to make sure all assets have been triggered
 		var count = 0;
 		var intervalID = window.setInterval(function(){
-			var r = that._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'setState=disarm');
+			var r = that._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'setState=disarm&secrityAssets='+that.securityAssets, null);
 			document.getElementById('disarm').className = "ui-btn ui-corner-all ui-btn-active";
 			document.getElementById('arm').className = "ui-btn ui-corner-all";
 			
@@ -109,81 +112,84 @@ nbSecurityApp.prototype = {
 	},
 	
 	getAssets: function(){
-		return this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'getAssets=true');		
+		return this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'getAssets=true', null);		
 	},
 	
 	toggleAssetState: function(asset){
 		if(asset == 'ruleOn'){
 			var guid = document.getElementById('rid').innerHTML;
-			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOn=true&guid='+guid);
-			
-			//Confirmation
-			$( "#popup-outside-page3" ).popup( "open" );
+			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOn=true&guid='+guid, '3');
 		}else if(asset == 'ruleOff'){
 			var guid = document.getElementById('rid').innerHTML;
-			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOff=true&guid='+guid);
-			
-			//Confirmation
-			$( "#popup-outside-page3" ).popup( "open" );
+			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'ruleOff=true&guid='+guid, '3');
 		}else if(asset == 'rfActuate'){
-			var guid = document.getElementById('subGuid').innerHTML;
-			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'rfActuate=true&guid='+guid);
-			
-			//Confirmation
-			$( "#popup-outside-page2" ).popup( "open" );
+			var guid = document.getElementById('subData').innerHTML;
+			var r = this._ajax('GET', 'http://mattmcalear.net/customFiles/NB/nbSecurityApp.php', 'rfActuate=true&guid='+guid, '2');
 		}else{
 			//Noda
 		}		
 	},
 			
 	//Private Methods
-	_ajax: function(method, location, queryString){		
+	_ajax: function(method, location, queryString, displayType){
+		var r = '';	
 		var that = this;
+		
 	    $.ajax({
-	    	 //async: false,
-	         url: location,
-	         method: 'post',
-	         dataType: 'jsonp',
-	         contentType: "application/json; charset=utf-8",
-	         data: queryString,
-	         success:function(json){
+			//async: false,
+	        url: location,
+	        method: 'post',
+	        dataType: 'jsonp',
+	        contentType: "application/json; charset=utf-8",
+	        data: queryString,
+	        beforeSend:function(){
+	        	//Loading
+		        $( "#popup-outside-page4" ).popup( "open" );
+			},
+	        success:function(json){
 	         	//console.log(json);
 	         	that._hideLoader();
+	         	$( "#popup-outside-page4" ).popup( "close" );
+	         	
+	         	if(displayType != null){
+	         		window.setTimeout(function(){
+	         			$( "#popup-outside-page"+displayType ).popup( "open" );
+	         		}, 200);
+	         	}
 	         	
 	         	if(json == 1){
 	         		//Great success!!
-	         	}else if(json == 'armed'){
-	            	document.getElementById('arm').className += " ui-btn-active";
-	            }else if(json == 'disarmed'){
-		            document.getElementById('disarm').className += " ui-btn-active";
-	            }else if(json['devices']){
+	         	}else if(json['devices']){
 		            that.assetObj = json;
 		            
 		            that._setAssets();
+		            
+		            that._setAlarmState();
 	            }else{
 		            //Noda
 	            }
 	                        
 	            return json;	            
-	         },
-	         error:function(XHR, textStatus, errorThrown){	         	
+	        },
+	        error:function(XHR, textStatus, errorThrown){	         	
 	         	//console.log(new Array(XHR, textStatus, errorThrown));
 	         	return textStatus;
-	         }
+	        }
 	    });	    
+	},
+	
+	_setAlarmState: function(){
+		if(this.assetObj['devices']['0000000000000000_0_0_1007'].last_data.DA == 'FF0000' 
+		|| this.assetObj['devices']['0000000000000000_0_0_1007'].last_data.DA == 'FFFF00'){
+			document.getElementById('arm').className += " ui-btn-active";
+		}else{
+			document.getElementById('disarm').className += " ui-btn-active";
+		}
 	},
 		
 	_hideLoader: function(){
-		/*
-			Need to call seperate id's 
-			as they seem to be trying to 
-			access the element on the other 
-			page and will not remove the proper id
-		*/
 		if(document.getElementById('ajaxLoader'))
 			document.getElementById('ajaxLoader').innerHTML = '';
-		if(document.getElementById('ajaxLoader2'))
-			document.getElementById('ajaxLoader2').innerHTML = '';
 	},
 	
 	_getUrlVars: function(){
@@ -425,13 +431,12 @@ nbSecurityApp.prototype = {
 		
 		html += '</ul>';
 		
+		document.getElementById('nbSubAssetDisplay').innerHTML = html;
 		
-		
-		//Bind to page initialization
-		$('#subAssetList').bind('pageinit', function() {
-			document.getElementById('nbSubAssetDisplay').innerHTML = html;
-		  	$('#subAssetListView').listview('refresh');
-		});
+		//Refresh data
+	  	window.setTimeout(function(){
+	  		$('#subAssetList').page('destroy').page();
+		}, 300);
 	},
 	
 	_setSubAssetData: function(guid, subGuid, asset){
@@ -524,7 +529,7 @@ nbSecurityApp.prototype = {
 		}
 		
 		//Confirmation
-		$( "#popup-outside-page" ).popup( "open" );
+		$( "#popup-outside-page1" ).popup( "open" );
 	},
 	
 	_setPref: function(asset, guid){

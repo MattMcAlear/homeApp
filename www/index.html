@@ -34,7 +34,6 @@
             app.initialize();
             var nbSecurityApp = new nbSecurityApp();
             nbSecurityApp.init();
-            nbSecurityApp.getAssets();
         </script>
         
         <title>HomeSecurity</title>
@@ -45,7 +44,7 @@
     		- GLOBAL
     		--------
     	-->
-    	<div id="popup-outside-page" data-theme="a" data-overlay-theme="a">
+    	<div id="popup-outside-page1" data-theme="a" data-overlay-theme="a">
 			<h1>Successfully Saved Data!</h1>
 		</div>
 		<div id="popup-outside-page2" data-theme="a" data-overlay-theme="a">
@@ -54,7 +53,10 @@
 		<div id="popup-outside-page3" data-theme="a" data-overlay-theme="a">
 			<h1>Successfully Changed Rule State!</h1>
 		</div>
-    	
+    	<div id="popup-outside-page4" data-theme="e" data-overlay-theme="a">
+			<div id="ajaxLoader"><img src="css/images/ajax-loader.gif" style="position: relative; left: 38%; opacity: .1;  z-index: 1000;" /></div>
+			<h1>Processing...</h1>
+		</div>
     	
     	
     	<!--
